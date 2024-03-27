@@ -54,7 +54,7 @@
         'leche', 'agua', 'jugo', 'zumo', 'aceite', 'licuado', 'malteada', 'choco',
         'crema', 'yogurt', 'café', 'té', 'vino', 'refresco', 'sopa', 'infusión', 
         'gatorade', 'bebida', 'vaso', 'tarro', 'lata', 'botella', 'crema agria, light', 'agua mineral',
-        'lala 100 sin lactosa dorada'
+        'lala 100 sin lactosa dorada', 'café preparado con agua'
     ];
 
     $valoresUniCode = [
@@ -62,8 +62,166 @@
         '0.25' => '&#188;',
         '0.3333' => '&#8531;',
         '0.2' => '&#8533;',
-        '0.75' => '&#190;',
-        '0.95' => '1'
+        '0.75' => '&#xBE;',
+        '0.95' => '1',
+        '0.66' => '&#x2154;'
     ];
+
+    $todasLasSiglasTablaEquivalentes = [
+        [
+            'id' => 'FR',
+            'id2' => '',
+            'n' => 'Fruta',
+            'en' => 'Fruit',
+            'hdec' => 15,
+            'prot' => 0,
+            'lip' => 0
+        ],
+        [
+            'id' => 'VE',
+            'id2' => '',
+            'n' => 'Verdura',
+            'en' => 'Vegetable',
+            'hdec' => 4,
+            'prot' => 2,
+            'lip' => 0
+        ],
+        [
+            'id' => 'CETU',
+            'id2' => '',
+            'n' => 'Cereales y tubérculos',
+            'en' => 'Cereals and tubers',
+            'hdec' => 15,
+            'prot' => 2,
+            'lip' => 0
+        ],
+        [
+            'id' => 'CETUG',
+            'id2' => '',
+            'n' => 'Cereales con grasa',
+            'en' => 'Cereal with fat',
+            'hdec' => 15,
+            'prot' => 2,
+            'lip' => 5
+        ],
+        [
+            'id' => 'LEG',
+            'id2' => ['LE'],
+            'n' => 'Leguminosas',
+            'en' => 'Legumes',
+            'hdec' => 20,
+            'prot' => 8,
+            'lip' => 1
+        ],
+        [
+            'id' => 'OAMBG',
+            'id2' => ['CMBG'],
+            'n' => 'O.A muy bajo en grasa',
+            'en' => 'Very lean meat',
+            'hdec' => 0,
+            'prot' => 7,
+            'lip' => 1
+        ],
+        [
+            'id' => 'OABG',
+            'id2' => ['CBG'],
+            'n' => 'O.A. bajo en grasa',
+            'en' => 'Lean meat',
+            'hdec' => 0,
+            'prot' => 7,
+            'lip' => 3
+        ],
+        [
+            'id' => 'OAMG',
+            'id2' => ['CMG'],
+            'n' => 'O.A. moderado en grasa',
+            'en' => 'Medium-fat meat',
+            'hdec' => 0,
+            'prot' => 7,
+            'lip' => 5
+        ],
+        [
+            'id' => 'OAAG',
+            'id2' => ['CAG'],
+            'n' => 'O.A. alto en grasa',
+            'en' => 'High-fat meat',
+            'hdec' => 0,
+            'prot' => 7,
+            'lip' => 8
+        ],
+        [
+            'id' => 'LED',
+            'id2' => '',
+            'n' => 'Leche descremada',
+            'en' => 'Skim milk',
+            'hdec' => 12,
+            'prot' => 9,
+            'lip' => 2
+        ],
+        [
+            'id' => 'LES',
+            'id2' => '',
+            'n' => 'Leche semidescremada',
+            'en' => 'Low-fat milk',
+            'hdec' => 12,
+            'prot' => 9,
+            'lip' => 4
+        ],
+        [
+            'id' => 'LEE',
+            'id2' => '',
+            'n' => 'Leche entera',
+            'en' => 'Whole milk',
+            'hdec' => 12,
+            'prot' => 9,
+            'lip' => 8
+        ],
+        [
+            'id' => 'AZ',
+            'id2' => ['AZU'],
+            'n' => 'Azúcar',
+            'en' => 'Sugar',
+            'hdec' => 10,
+            'prot' => 0,
+            'lip' => 0
+        ],
+        [
+            'id' => 'G',
+            'id2' => '',
+            'n' => 'Grasa',
+            'en' => 'Fat',
+            'hdec' => 0,
+            'prot' => 0,
+            'lip' => 5
+        ],
+        [
+            'id' => 'AZGR',
+            'id2' => ['AZG'],
+            'n' => 'Azúcar con grasa',
+            'en' => 'Sugar whit fat',
+            'hdec' => 10,
+            'prot' => 0,
+            'lip' => 5
+        ],
+        [
+            'id' => 'GP',
+            'id2' => ['GRPROT'],
+            'n' => 'Grasa con proteina',
+            'en' => 'Fat with proteins',
+            'hdec' => 3,
+            'prot' => 3,
+            'lip' => 5
+        ],
+        [
+            'id' => 'SUP',
+            'id2' => '',
+            'n' => 'Suplemento de proteína',
+            'en' => 'Protein supplement',
+            'hdec' => 0,
+            'prot' => 7,
+            'lip' => 1
+        ]
+    ];
+    
     
     

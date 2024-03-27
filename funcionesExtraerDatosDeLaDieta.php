@@ -2,8 +2,16 @@
 
 
     //PASO 1.- Detectar el tipo de archivo que se esta recibiendo:
+    function detectarTipoArchivoDeLaDieta($url, $urls) {
 
-    function detectarTipoArchivoDeLaDieta($url) {
+        foreach ($urls as $fechaDia => $urlDelDia) {
+            
+            if($url == $urlDelDia){
+                echo "
+                    <h1>Mostrando la dieta del día: $fechaDia</h1>
+                ";
+            }
+        }
 
         // Obtener los encabezados HTTP de la URL
         $headers = get_headers($url);

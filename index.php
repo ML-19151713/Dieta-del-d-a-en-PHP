@@ -2,6 +2,8 @@
     include 'funcionesExtraerDatosDeLaDieta.php';
     include 'arreglosAuxiliares.php';
 
+    
+
 
     //Arreglo para probar de los json (Dietas del paciente):
 
@@ -40,14 +42,12 @@
     <title>Document</title>
 </head>
 <body>
-    <h1>Mostrando la dieta del día: domingo 26 de noviembre</h1>
 
     <?php
         
-
         //Extracción de datos:
 
-        $esObjetoJson = detectarTipoArchivoDeLaDieta($urls['domingo 26 de noviembre']);
+        $esObjetoJson = detectarTipoArchivoDeLaDieta($urls['viernes 8 de diciembre'], $urls);
 
         if(!$esObjetoJson[1]) return;
 
@@ -75,9 +75,11 @@
                 ';
                     $nombreIngesta = $arrayConNombreDeCadaIngesta[$i];
                     
-                    mostrarDivQueLlevaELNombreDeLaIngesta($nombreIngesta);
-
                     $arrayRecetasDeLaIngesta = (($datosDietaDelDia['ingestas'])[$nombreIngesta])['recetas'];
+                    
+                    if(empty($arrayRecetasDeLaIngesta)) continue;
+
+                    mostrarDivQueLlevaELNombreDeLaIngesta($nombreIngesta);
 
                     mostrarRecetasDeLaIngesta($arrayRecetasDeLaIngesta);
                     
@@ -95,13 +97,109 @@
             </div>
         ';
 
+        //Aqui empieza la tabla general de equivalentes:
+
+        $valoresEnCeroTablaEquivalentes = [
+            
+            "Fruta" => 0,
+            "Verdura" => 0, 
+            "Cereales y tubérculos" => 0, 
+            "Cereales con grasa" => 0,
+            "Leguminosas" => 0,
+            "O.A. muy bajo en grasa" => 0,
+            "O.A. bajo en grasa" => 0,
+            "O.A. moderado en grasa" => 0,
+            "O.A. alto en grasa" => 0,
+            "Leche descremada" => 0,
+            "Leche semidescremada" => 0,
+            "Leche entera" => 0,
+            "Azúcar" => 0,
+            "Grasa" => 0,
+            "Azúcar con grasa" => 0,
+            "Grasa con proteina" => 0,
+            "Suplemento de proteína" => 0
+        ];
+
+        $valoresAInsertarEnTablaEquivalentes = obtenerValoresTablaEquivalentes($datosDietaDelDia);
+
+        foreach ($valoresEnCeroTablaEquivalentes as $clave => $valor) {
+
+            foreach ($valoresAInsertarEnTablaEquivalentes as $siglas => $cantidad) {
+                
+                if($clave == $siglas){
+                    $valoresEnCeroTablaEquivalentes[$clave] = round($cantidad, 1);
+                }
+            }
+        }
+
+        $valoresTablaEquivalentes = &$valoresEnCeroTablaEquivalentes;
+
+        echo '<h2>Tabla general de equivalentes</h2>';
+
+        echo '
+            <table class="table mx-auto my-3">
+
+                <thead class="bg-light text-center font-weight-bold">
+                    <tr>
+                        <td colspan="2" style="font-weight: bold;">Equivalentes</td>
+                    </tr>
+                </thead>
+
+                <tbody>
+        ';
+
+        
+        foreach ($valoresTablaEquivalentes as $alimento => $cantidad) {
+            echo "
+                <tr>
+                    <td>$alimento<td>
+                    <td>$cantidad<td>
+                </tr>
+            ";
+        }
+        
+            
+        echo '
+                </tbody>
+            </table>
+        ';
+
+
+        /*
+        echo "
+            <table>
+                <thead>
+                    <tr>
+                        <td colspan='2'>Equivalentes</td>
+                    </tr>
+                </thead>
+
+                <tbody>
+
+                    <tr>
+                        <td>Fruta</td>
+                        <td>2</td>
+                    </tr>
+            
+                    <tr>
+                        <td>Verdura</td>
+                        <td>4.4</td>
+                    </tr>
+            
+                </tbody>
+
+            </table>
+
+        ";
+        */
+
     ?>
 </body>
 </html>
 
 
 <?php
-    //Funciones auxiliares para mostrar la dieta:
+    //Funciones auxiliares para mostrar la primera parte de la dieta:
 
     function mostrarDivQueLlevaELNombreDeLaIngesta($nombreIngesta){
 
@@ -142,12 +240,51 @@
                             
                             $nombreIngrediente = (($arrayConDatosDeLaReceta['ingredientes'])[$in])['nombre'];
                             $cantidad = (($arrayConDatosDeLaReceta['ingredientes'])[$in])['cantidad'];
+                            $stringCaseras =  (($arrayConDatosDeLaReceta['ingredientes'])[$in])['caseras'];
+                            $cantidadDeCaseras = obtenerCantidadDeCaseras($stringCaseras);
+
+                            global $alimentosQueSeMidenEnMililitros;
+
+                            $unidadDeMedida = obtenerUnidadDeMedidaSegunElIngrediente($nombreIngrediente, $alimentosQueSeMidenEnMililitros);
+
+
+                            if ($cantidadDeCaseras == 0){
+                                echo "
+                                    <div class='alimento w-100 text-left text-secondary  border p-1 '>
+                                        <span>$nombreIngrediente $cantidad $unidadDeMedida</span>
+                                    </div>
+                                ";
+                                continue;
+                            }
+                                 
+                            $proporcional = $cantidad /$cantidadDeCaseras;
+                            (($arrayConDatosDeLaReceta['ingredientes'])[$in])['proporcional'] = $proporcional;
                             
-                            $unidadDeMedida = obtenerUnidadDeMedidaSegunElIngrediente($nombreIngrediente);
+                            global $valoresUniCode;
+
+                            if ($proporcional < 1){
+                            
+                                $medidaProporcional = encontrarValorUnicodeMasAdecuado($valoresUniCode, $proporcional);
+   
+                            }else{
+
+                                $diferencia = $proporcional-intval($proporcional);
+
+                                if($diferencia == 0) $medidaProporcional = $proporcional;
+
+                                $enterosDeLaMedidaProporcional = $proporcional - $diferencia;
+
+                                $parteFraccionaria = encontrarValorUnicodeMasAdecuado($valoresUniCode, $diferencia);
+
+                                $medidaProporcional = "$enterosDeLaMedidaProporcional $parteFraccionaria";
+                                
+                            }
+                            
+                            $unidadMedidaCaseras = obtenerUnidadDeMedidaCaseras($stringCaseras, $proporcional);
                         
                             echo "
                                 <div class='alimento w-100 text-left text-secondary  border p-1 '>
-                                    <span>$nombreIngrediente $cantidad $unidadDeMedida</span>
+                                    <span>$nombreIngrediente $cantidad $unidadDeMedida , $medidaProporcional $unidadMedidaCaseras</span>
                                 </div>
                             ";
                         }
@@ -159,7 +296,6 @@
             ";
         }
 
-        echo '<br><br>';
     }
 
     function formatearUrlDelaImagen($srcImagenSinFormato){
@@ -191,14 +327,8 @@
         }
     }
 
-    function obtenerUnidadDeMedidaSegunElIngrediente($nombreIngrediente){
+    function obtenerUnidadDeMedidaSegunElIngrediente($nombreIngrediente, $alimentosQueSeMidenEnMililitros){
 
-        $alimentosQueSeMidenEnMililitros = [
-            'leche', 'agua', 'jugo', 'zumo', 'aceite', 'licuado', 'malteada', 'choco',
-            'crema', 'yogurt', 'café', 'té', 'vino', 'refresco', 'sopa', 'infusión', 
-            'gatorade', 'bebida', 'vaso', 'tarro', 'lata', 'botella', 'crema agria, light', 'agua mineral',
-            'lala 100 sin lactosa dorada', 'café preparado con agua'
-        ];
 
         if (in_array(strtolower($nombreIngrediente), $alimentosQueSeMidenEnMililitros)){
             return 'ml';
@@ -207,6 +337,167 @@
         }
 
     }
+
+    function obtenerCantidadDeCaseras($stringCaseras) {
+
+        if(!is_string($stringCaseras)) return;
+
+        // Buscar la posición del primer signo igual (=)
+        $posicion_igual = strpos($stringCaseras, '=');
+        
+        // Verificar si se encontró el signo igual
+        if ($posicion_igual !== false) {
+            // Obtener la parte de la cadena después del signo igual
+            $cantidad_string = substr($stringCaseras, $posicion_igual + 1);
+            
+            // Remover cualquier guion bajo (_) al final de la cadena
+            $cantidad_string = rtrim($cantidad_string, '_');
+            
+            // Convertir la cadena a un número de punto flotante (float)
+            $cantidad_float = (float)$cantidad_string;
+            
+            return $cantidad_float;
+        } else {
+            // Si no se encuentra el signo igual en la cadena, devolver null o mostrar un mensaje de error según sea necesario
+            return null;
+        }
+    }
+
+
+    function encontrarValorUnicodeMasAdecuado($valoresUniCode, $proporcional){
+
+        //echo $proporcional;
+        if($proporcional> 0.39 && $proporcional<0.60) return $valoresUniCode['0.5'];
+
+        if($proporcional> 0.24 && $proporcional<0.3) return $valoresUniCode['0.25'];
+
+        if($proporcional> 0.29 && $proporcional<0.4) return $valoresUniCode['0.3333'];
+
+        if($proporcional>0.9 && $proporcional<1) return $valoresUniCode['0.95'];
+
+        if($proporcional >0.14 && $proporcional < 0.25) return $valoresUniCode['0.2'];
+
+        if($proporcional > 0.7 && $proporcional < 0.85) return $valoresUniCode['0.75'];
+
+        if($proporcional >0 && $proporcional < 0.15) return 0.1;
+
+        if($proporcional > 0.59 && $proporcional < 0.71) return $valoresUniCode['0.66'];
+        
+    }
+
+    function obtenerUnidadDeMedidaCaseras($stringCaseras, $proporcional){
+
+        global $siglasCaseras;  $todasLasSiglas = &$siglasCaseras;
+        // Divide la cadena en función del signo de igual (=)
+        $arrayConSubStringsDeCaseras = explode('=', $stringCaseras);
+        
+        // Devuelve la primera parte (antes del signo de igual)
+        $siglas = $arrayConSubStringsDeCaseras[0];
+
+        foreach ($todasLasSiglas as $arrayConUnaSigla) {
+            
+            if($arrayConUnaSigla['id'] == $siglas || $arrayConUnaSigla['id2'] == $siglas){
+                
+                //Es un array porque da el significado en singular y en plural:
+
+                $arrayConSignificadoSiglas = $arrayConUnaSigla['n'];
+
+            }
+        }
+
+        return $proporcional <= 1 ? $arrayConSignificadoSiglas[0] : $arrayConSignificadoSiglas[1];
+
+        /*
+            La linea anterior equivale a esto:
+        if($proporcional <= 1){
+            return $arrayConSignificadoSiglas[0];
+        }else{
+            return $arrayConSignificadoSiglas[1];
+        }*/
+
+
+    } // Hasta aquí llegan las funciones auxiliares para mostrar la primera parte de la dieta:
+        
+    //Funciones para la tabla general de equivalentes (la que no usa íconos):
+
+    function obtenerValoresTablaEquivalentes($datosDietaDelDia){
+        
+        $valoresFinalesTablaEquivalentes = ['VE' => 0];
+        global $todasLasSiglasTablaEquivalentes;
+
+        foreach ($datosDietaDelDia as $arrayEnNivelDeIngestas) {
+
+            foreach ($arrayEnNivelDeIngestas as $nivelRecetas) {
+                
+                foreach ($nivelRecetas as $nivelReceta) {
+
+                    foreach ($nivelReceta as $nivelIngredientes) {
+                        
+                        foreach ($nivelIngredientes as $nivelIngrediente) {
+                            
+                            if(is_string($nivelIngrediente)) continue;
+
+                            foreach ($nivelIngrediente as $nivelAtributos) {
+                                
+                                $stringEquis = $nivelAtributos['equis'];
+
+                                $valoresEquis = explode('=', $stringEquis);
+                                $siglasEquis = strtoupper($valoresEquis[0]);
+                                $cantidadEquis = number_format((float)$valoresEquis[1], 2);
+
+                                if(array_key_exists($siglasEquis, $valoresFinalesTablaEquivalentes)){
+                                    
+                                    $valoresFinalesTablaEquivalentes[$siglasEquis] += $cantidadEquis;
+                                    
+                                }else{
+                                    $valoresFinalesTablaEquivalentes[$siglasEquis] = $cantidadEquis;
+                                }
+                            
+                            }
+
+                        }
+
+                    }
+                }
+
+            }
+        }//Aquí acaba el foreach principal
+
+        $valoresParaImprimirTabla = array();
+
+        foreach ($todasLasSiglasTablaEquivalentes as $arregloCategoriaAlimento) {
+            
+            foreach ($valoresFinalesTablaEquivalentes as $claveCategoria => $cantidadFinal) {
+
+                if ($claveCategoria == $arregloCategoriaAlimento['id']) {
+
+                    $valoresParaImprimirTabla[$arregloCategoriaAlimento['n']] = $cantidadFinal;
+    
+
+                }elseif(is_array($arregloCategoriaAlimento['id2'])){
+                    
+                    foreach ($arregloCategoriaAlimento['id2'] as $siglasId2) {
+                        
+                        if ($claveCategoria == $siglasId2){
+
+                            if (key_exists($arregloCategoriaAlimento['n'], $valoresParaImprimirTabla)){
+
+                                $valoresParaImprimirTabla[$arregloCategoriaAlimento['n']] += $cantidadFinal;
+                            }else {
+                                $valoresParaImprimirTabla[$arregloCategoriaAlimento['n']] = $cantidadFinal;
+                            }
+
+                        }
+                    }
+                }
+            }
+
+        }
+
+        return $valoresParaImprimirTabla;
+
+    }
+
 
 ?>
 
